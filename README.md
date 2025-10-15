@@ -4,7 +4,7 @@ A metrics exporter for Star Wars Jedi Knight: Jedi Academy dedicated servers, su
 
 ## Usage
 
-The following commands can be used to run the exporter with [Docker](https://docs.docker.com/engine/).
+The following commands can be used to run the exporter as a [Docker](https://docs.docker.com/engine/) container.
 
 ```bash
 # Show syntax help
@@ -14,12 +14,12 @@ docker run --rm ghcr.io/fcrespel/jka-exporter:master -help
 docker run -d --name jka-exporter -p 8870:8870 ghcr.io/fcrespel/jka-exporter:master -host <JKA server host or IP> -port 29070
 
 # Start in the background with OTLP HTTP exporter
-docker run -d --name jka-exporter -p 8870:8870 ghcr.io/fcrespel/jka-exporter:master -host <JKA server host or IP> -port 29070 -exporter otlphttp -otlp-endpoint otlp-receiver:4318
+docker run -d --name jka-exporter -p 8870:8870 -e OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-receiver:4318 ghcr.io/fcrespel/jka-exporter:master -host <JKA server host or IP> -port 29070 -exporter otlphttp
 
 # Start in the background with OTLP GRPC exporter
-docker run -d --name jka-exporter -p 8870:8870 ghcr.io/fcrespel/jka-exporter:master -host <JKA server host or IP> -port 29070 -exporter otlpgrpc -otlp-endpoint otlp-receiver:4317
+docker run -d --name jka-exporter -p 8870:8870 -e OTEL_EXPORTER_OTLP_ENDPOINT=otlp-receiver:4317 ghcr.io/fcrespel/jka-exporter:master -host <JKA server host or IP> -port 29070 -exporter otlpgrpc
 
-# Stop exporter
+# Stop container
 docker stop jka-exporter
 
 # Delete container
@@ -28,41 +28,46 @@ docker rm jka-exporter
 
 ### Options
 
-```
-Server options:
-  -host string
-        Server host name or IP address (default "localhost")
-  -port int
-        Server port (default 29070)
+The following command line arguments are supported:
 
-Metrics options:
-  -metrics-port int
-        Metrics server port (default 8870)
-  -exporter string
-        Metrics exporter type (prometheus, otlphttp, or otlpgrpc) (default "prometheus")
-  -otlp-endpoint string
-        OTLP endpoint (default "localhost:4318")
-  -otlp-timeout duration
-        OTLP request timeout (default 10s)
-  -otlp-interval duration
-        OTLP metric collection interval (default 60s)
-
-Logging options:
-  -log-level string
-        Log level (debug, info, warn, error) (default "info")
-  -log-format string
-        Log format (text or json) (default "text")
 ```
+-host string
+      Server host name or IP address (default "localhost")
+-port int
+      Server port (default 29070)
+-metrics-port int
+      Metrics server port (default 8870)
+-exporter string
+      Metrics exporter type (prometheus, otlphttp, or otlpgrpc) (default "prometheus")
+-log-level string
+      Log level (debug, info, warn, error) (default "info")
+-log-format string
+      Log format (text or json) (default "text")
+```
+
+### Environment variables
+
+The following standard OpenTelemetry environment variables are supported:
+
+- `OTEL_EXPORTER_OTLP_CERTIFICATE`: certificate file path for TLS verification
+- `OTEL_EXPORTER_OTLP_ENDPOINT`: OTLP endpoint URL (e.g. `http://localhost:4318` for HTTP, `localhost:4317` for gRPC)
+- `OTEL_EXPORTER_OTLP_HEADERS`: headers to include in requests (comma-separated key=value pairs)
+- `OTEL_EXPORTER_OTLP_INSECURE`: use insecure transport (default false)
+- `OTEL_EXPORTER_OTLP_TIMEOUT`: timeout for OTLP export requests in milliseconds (default 10000)
+- `OTEL_METRIC_EXPORT_INTERVAL`: metric export interval in milliseconds (default 60000)
+- `OTEL_METRIC_EXPORT_TIMEOUT`: metric export timeout in milliseconds (default 30000)
 
 ### Metrics
 
 The following metrics are exposed:
 
-- `jka.clients.connected`: Current number of clients connected
-- `jka.clients.max`: Maximum number of clients allowed
-- `jka.clients.ping`: Player ping in milliseconds (with player name label)
+- `jka.clients.connected`: current number of clients connected
+- `jka.clients.max`: maximum number of clients allowed
+- `jka.clients.ping`: player ping in milliseconds (with player name label)
 
-When using the Prometheus exporter (default), metrics are available at `http://localhost:8870/metrics`.
+When using the Prometheus exporter (default), metrics are available at `http://localhost:8870/metrics`. Note that dots (`.`) are replaced with underscores (`_`) in Prometheus metric names.
+
+Additionally, a `http://localhost:8870/health` endpoint is available for health checking, e.g. by Kubernetes liveness/readiness probes.
 
 ## Building from source
 

@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel/attribute"
@@ -34,11 +33,6 @@ type Config struct {
 		Level  string
 		Format string
 	}
-	OTLP struct {
-		Endpoint string
-		Timeout  time.Duration
-		Interval time.Duration
-	}
 }
 
 var cfg Config
@@ -55,11 +49,6 @@ func initConfig() error {
 	// Logging flags
 	flag.StringVar(&cfg.Logging.Level, "log-level", "info", "Log level (debug, info, warn, error)")
 	flag.StringVar(&cfg.Logging.Format, "log-format", "text", "Log format (text or json)")
-
-	// OTLP flags
-	flag.StringVar(&cfg.OTLP.Endpoint, "otlp-endpoint", "localhost:4318", "OTLP endpoint")
-	flag.DurationVar(&cfg.OTLP.Timeout, "otlp-timeout", 10*time.Second, "OTLP request timeout")
-	flag.DurationVar(&cfg.OTLP.Interval, "otlp-interval", 60*time.Second, "OTLP metric collection interval")
 
 	flag.Parse()
 	return nil
@@ -118,24 +107,18 @@ func initOtel() (*sdkmetric.MeterProvider, error) {
 
 	switch cfg.Metrics.Exporter {
 	case "otlphttp":
-		exporter, err := otlpmetrichttp.New(ctx,
-			otlpmetrichttp.WithEndpoint(cfg.OTLP.Endpoint),
-			otlpmetrichttp.WithTimeout(cfg.OTLP.Timeout),
-		)
+		exporter, err := otlpmetrichttp.New(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create OTLP HTTP exporter: %w", err)
 		}
-		reader = sdkmetric.NewPeriodicReader(exporter, sdkmetric.WithInterval(cfg.OTLP.Interval))
+		reader = sdkmetric.NewPeriodicReader(exporter)
 
 	case "otlpgrpc":
-		exporter, err := otlpmetricgrpc.New(ctx,
-			otlpmetricgrpc.WithEndpoint(cfg.OTLP.Endpoint),
-			otlpmetricgrpc.WithTimeout(cfg.OTLP.Timeout),
-		)
+		exporter, err := otlpmetricgrpc.New(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create OTLP gRPC exporter: %w", err)
 		}
-		reader = sdkmetric.NewPeriodicReader(exporter, sdkmetric.WithInterval(cfg.OTLP.Interval))
+		reader = sdkmetric.NewPeriodicReader(exporter)
 
 	case "prometheus":
 		exporter, err := prometheus.New()
