@@ -1,17 +1,29 @@
 # JKA Exporter
 
-Jedi Academy metrics exporter supporting Prometheus and OTLP formats.
-
-## Installation
-
-```bash
-go install github.com/fcrespel/jka-exporter@latest
-```
+A metrics exporter for Star Wars Jedi Knight: Jedi Academy dedicated servers, supporting Prometheus and OTLP formats.
 
 ## Usage
 
+The following commands can be used to run the exporter with [Docker](https://docs.docker.com/engine/).
+
 ```bash
-jka-exporter [options]
+# Show syntax help
+docker run --rm ghcr.io/fcrespel/jka-exporter:master -help
+
+# Start in the background with Prometheus exporter (default)
+docker run -d --name jka-exporter -p 8870:8870 ghcr.io/fcrespel/jka-exporter:master -host <JKA server host or IP> -port 29070
+
+# Start in the background with OTLP HTTP exporter
+docker run -d --name jka-exporter -p 8870:8870 ghcr.io/fcrespel/jka-exporter:master -host <JKA server host or IP> -port 29070 -exporter otlphttp -otlp-endpoint otlp-receiver:4318
+
+# Start in the background with OTLP GRPC exporter
+docker run -d --name jka-exporter -p 8870:8870 ghcr.io/fcrespel/jka-exporter:master -host <JKA server host or IP> -port 29070 -exporter otlpgrpc -otlp-endpoint otlp-receiver:4317
+
+# Stop exporter
+docker stop jka-exporter
+
+# Delete container
+docker rm jka-exporter
 ```
 
 ### Options
