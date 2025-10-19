@@ -88,22 +88,22 @@ func initLogger(level string, format string) error {
 	return nil
 }
 
-func initOtel() (*sdkmetric.MeterProvider, error) {
+func initOtel(ctx context.Context) (*sdkmetric.MeterProvider, error) {
 	instanceID := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
-	res, err := resource.Merge(
-		resource.Default(),
-		resource.NewWithAttributes(
-			semconv.SchemaURL,
+	res, err := resource.New(ctx,
+		resource.WithSchemaURL(semconv.SchemaURL),
+		resource.WithAttributes(
 			semconv.ServiceName("jka-server"),
 			semconv.ServiceInstanceID(instanceID),
 		),
+		resource.WithFromEnv(),
+		resource.WithTelemetrySDK(),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
 
 	var reader sdkmetric.Reader
-	ctx := context.Background()
 
 	switch cfg.Metrics.Exporter {
 	case "otlphttp":
@@ -208,10 +208,12 @@ func run() error {
 		return fmt.Errorf("failed to initialize logger: %w", err)
 	}
 
-	provider, err := initOtel()
+	ctx := context.Background()
+	provider, err := initOtel(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to initialize OpenTelemetry: %w", err)
 	}
+	defer provider.Shutdown(ctx)
 
 	connector := NewQ3Connector(cfg.Server.Host, cfg.Server.Port)
 	if err := connector.Connect(); err != nil {

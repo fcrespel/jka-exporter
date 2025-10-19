@@ -16,7 +16,7 @@ docker run -d --name jka-exporter -p 8870:8870 ghcr.io/fcrespel/jka-exporter:mas
 # Start in the background with OTLP HTTP exporter
 docker run -d --name jka-exporter -p 8870:8870 -e OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-receiver:4318 ghcr.io/fcrespel/jka-exporter:master -host <JKA server host or IP> -port 29070 -exporter otlphttp
 
-# Start in the background with OTLP GRPC exporter
+# Start in the background with OTLP gRPC exporter
 docker run -d --name jka-exporter -p 8870:8870 -e OTEL_EXPORTER_OTLP_ENDPOINT=otlp-receiver:4317 ghcr.io/fcrespel/jka-exporter:master -host <JKA server host or IP> -port 29070 -exporter otlpgrpc
 
 # Stop container
@@ -52,10 +52,12 @@ The following standard OpenTelemetry environment variables are supported:
 - `OTEL_EXPORTER_OTLP_CERTIFICATE`: certificate file path for TLS verification
 - `OTEL_EXPORTER_OTLP_ENDPOINT`: OTLP endpoint URL (e.g. `http://localhost:4318` for HTTP, `localhost:4317` for gRPC)
 - `OTEL_EXPORTER_OTLP_HEADERS`: headers to include in requests (comma-separated key=value pairs)
-- `OTEL_EXPORTER_OTLP_INSECURE`: use insecure transport (default false)
+- `OTEL_EXPORTER_OTLP_INSECURE`: use insecure transport for gRPC (default false)
 - `OTEL_EXPORTER_OTLP_TIMEOUT`: timeout for OTLP export requests in milliseconds (default 10000)
 - `OTEL_METRIC_EXPORT_INTERVAL`: metric export interval in milliseconds (default 60000)
 - `OTEL_METRIC_EXPORT_TIMEOUT`: metric export timeout in milliseconds (default 30000)
+- `OTEL_RESOURCE_ATTRIBUTES`: extra resource attributes (comma-separated key=value pairs)
+- `OTEL_SERVICE_NAME`: service name resource attribute (default "jka-server")
 
 ### Metrics
 
