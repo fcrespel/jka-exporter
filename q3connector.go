@@ -185,11 +185,11 @@ func parsePlayer(line string) PlayerInfo {
 	return player
 }
 
-// sanitizeName removes color codes from player names
+// Remove color codes from player names
 func sanitizeName(name string) string {
 	var result strings.Builder
 	for i := 0; i < len(name); i++ {
-		if name[i] == '^' && i+1 < len(name) {
+		if name[i] == '^' {
 			// Skip the caret and the following color code character
 			i++
 			continue
