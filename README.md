@@ -35,6 +35,10 @@ The following command line arguments are supported:
       Server host name or IP address (default "localhost")
 -port int
       Server port (default 29070)
+-rcon-password string
+      Server Rcon password
+-enable-rpmetrics
+      Enable RPMod rpmetrics Rcon command to gather additional metrics
 -metrics-port int
       Metrics server port (default 8870)
 -exporter string
@@ -61,11 +65,21 @@ The following standard OpenTelemetry environment variables are supported:
 
 ### Metrics
 
-The following metrics are exposed:
+The following base metrics are exposed:
 
 - `jka.clients.connected`: current number of clients connected
-- `jka.clients.max`: maximum number of clients allowed
+- `jka.clients.limit`: maximum number of clients allowed
 - `jka.clients.ping`: player ping in milliseconds (with player name label)
+
+The following RPMod metrics are exposed when the `-enable-rpmetrics` flag is set:
+
+- `jka.server.cs.limit`: maximum number of Config String characters allowed
+- `jka.server.cs.usage`: current number of Config String characters used
+- `jka.server.entities.limit`: maximum number of entities allowed
+- `jka.server.entities.usage`: current number of entities used
+- `jka.server.rpcs.limit`: maximum number of RPCS characters allowed
+- `jka.server.rpcs.usage`: current number of RPCS characters used
+- `jka.server.uptime`: server uptime in milliseconds
 
 When using the Prometheus exporter (default), metrics are available at `http://localhost:8870/metrics`. Note that dots (`.`) are replaced with underscores (`_`) in Prometheus metric names.
 

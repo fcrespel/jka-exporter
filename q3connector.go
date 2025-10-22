@@ -148,6 +148,31 @@ func (c *Q3Connector) GetStatus() (*ServerStatus, error) {
 	return status, nil
 }
 
+// Execute a remote console command on the server
+func (c *Q3Connector) Rcon(password string, command string) (string, error) {
+	if password == "" {
+		return "", fmt.Errorf("missing rcon password")
+	}
+
+	// Format: "rcon <password> <command>"
+	rconCmd := fmt.Sprintf("rcon %s %s\n", password, command)
+	response, err := c.sendCommand(rconCmd)
+	if err != nil {
+		return "", fmt.Errorf("rcon command failed: %w", err)
+	}
+
+	// The response starts with "print\n", remove it to get the actual output
+	if !strings.HasPrefix(response, "print\n") {
+		return "", fmt.Errorf("invalid rcon response")
+	}
+	return strings.TrimSpace(strings.TrimPrefix(response, "print\n")), nil
+}
+
+// Parse a Q3 infostring into a map
+func (c *Q3Connector) ParseInfoString(input string) map[string]string {
+	return parseInfoString(input)
+}
+
 // Parse a Q3 infostring into a map
 func parseInfoString(input string) map[string]string {
 	result := make(map[string]string)
