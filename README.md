@@ -36,7 +36,7 @@ The following command line arguments are supported:
 -port int
       Server port (default 29070)
 -rcon-password string
-      Server Rcon password
+      Server Rcon password (can also be set via RCON_PASSWORD environment variable)
 -enable-rpmetrics
       Enable RPMod rpmetrics Rcon command to gather additional metrics
 -metrics-port int

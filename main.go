@@ -45,7 +45,7 @@ func initConfig() error {
 	// Server flags
 	flag.StringVar(&cfg.Server.Host, "host", "localhost", "Server host name or IP address")
 	flag.IntVar(&cfg.Server.Port, "port", 29070, "Server port")
-	flag.StringVar(&cfg.Server.RconPassword, "rcon-password", "", "Server Rcon password")
+	flag.StringVar(&cfg.Server.RconPassword, "rcon-password", os.Getenv("RCON_PASSWORD"), "Server Rcon password (can also be set via RCON_PASSWORD environment variable)")
 
 	// Feature flags
 	flag.BoolVar(&cfg.Feature.EnableRpMetrics, "enable-rpmetrics", false, "Enable RPMod rpmetrics Rcon command to gather additional metrics")
