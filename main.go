@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel/attribute"
@@ -103,6 +104,15 @@ func initLogger(level string, format string) error {
 }
 
 func initOtel(ctx context.Context) (*sdkmetric.MeterProvider, error) {
+	// Expand environment variable references in all OTEL_ variables
+	for _, e := range os.Environ() {
+		kv := strings.SplitN(e, "=", 2)
+		if len(kv) == 2 && strings.HasPrefix(kv[0], "OTEL_") {
+			os.Setenv(kv[0], os.ExpandEnv(kv[1]))
+		}
+	}
+
+	// Build resource
 	instanceID := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	res, err := resource.New(ctx,
 		resource.WithSchemaURL(semconv.SchemaURL),
@@ -117,8 +127,8 @@ func initOtel(ctx context.Context) (*sdkmetric.MeterProvider, error) {
 		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
 
+	// Build metric reader
 	var reader sdkmetric.Reader
-
 	switch cfg.Metrics.Exporter {
 	case "otlphttp":
 		exporter, err := otlpmetrichttp.New(ctx)
@@ -145,6 +155,7 @@ func initOtel(ctx context.Context) (*sdkmetric.MeterProvider, error) {
 		return nil, fmt.Errorf("invalid exporter type: %s (must be 'prometheus', 'otlphttp', or 'otlpgrpc')", cfg.Metrics.Exporter)
 	}
 
+	// Build meter provider
 	provider := sdkmetric.NewMeterProvider(
 		sdkmetric.WithReader(reader),
 		sdkmetric.WithResource(res),

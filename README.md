@@ -63,6 +63,8 @@ The following standard OpenTelemetry environment variables are supported:
 - `OTEL_RESOURCE_ATTRIBUTES`: extra resource attributes (comma-separated key=value pairs)
 - `OTEL_SERVICE_NAME`: service name resource attribute (default "jka-server")
 
+Variables may reference other environment variables using `${VAR}` syntax, e.g. `OTEL_EXPORTER_OTLP_ENDPOINT=http://${HOST_IP}:4318`.
+
 ### Metrics
 
 The following base metrics are exposed:
