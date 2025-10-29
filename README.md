@@ -8,16 +8,16 @@ The following commands can be used to run the exporter as a [Docker](https://doc
 
 ```bash
 # Show syntax help
-docker run --rm ghcr.io/fcrespel/jka-exporter:master -help
+docker run --rm ghcr.io/fcrespel/jka-exporter:latest -help
 
 # Start in the background with Prometheus exporter (default)
-docker run -d --name jka-exporter -p 8870:8870 ghcr.io/fcrespel/jka-exporter:master -host <JKA server host or IP> -port 29070
+docker run -d --name jka-exporter -p 8870:8870 ghcr.io/fcrespel/jka-exporter:latest -host <JKA server host or IP> -port 29070
 
 # Start in the background with OTLP HTTP exporter
-docker run -d --name jka-exporter -p 8870:8870 -e OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-receiver:4318 ghcr.io/fcrespel/jka-exporter:master -host <JKA server host or IP> -port 29070 -exporter otlphttp
+docker run -d --name jka-exporter -p 8870:8870 -e OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-receiver:4318 ghcr.io/fcrespel/jka-exporter:latest -host <JKA server host or IP> -port 29070 -exporter otlphttp
 
 # Start in the background with OTLP gRPC exporter
-docker run -d --name jka-exporter -p 8870:8870 -e OTEL_EXPORTER_OTLP_ENDPOINT=otlp-receiver:4317 ghcr.io/fcrespel/jka-exporter:master -host <JKA server host or IP> -port 29070 -exporter otlpgrpc
+docker run -d --name jka-exporter -p 8870:8870 -e OTEL_EXPORTER_OTLP_ENDPOINT=otlp-receiver:4317 ghcr.io/fcrespel/jka-exporter:latest -host <JKA server host or IP> -port 29070 -exporter otlpgrpc
 
 # Stop container
 docker stop jka-exporter
