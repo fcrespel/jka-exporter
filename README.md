@@ -69,6 +69,7 @@ Variables may reference other environment variables using `${VAR}` syntax, e.g. 
 
 The following base metrics are exposed:
 
+- `jka.up`: whether the JKA server is up (1) or down (0)
 - `jka.clients.connected`: current number of clients connected
 - `jka.clients.limit`: maximum number of clients allowed
 - `jka.clients.ping`: player ping in milliseconds (with player name label)

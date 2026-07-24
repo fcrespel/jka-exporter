@@ -166,7 +166,15 @@ func initOtel(ctx context.Context) (*sdkmetric.MeterProvider, error) {
 
 func initBaseMetrics(meter metric.Meter, q3connector *Q3Connector) error {
 	var err error
+	var up metric.Int64ObservableGauge
 	var currentClients, maxClients, playerPing metric.Int64ObservableUpDownCounter
+
+	if up, err = meter.Int64ObservableGauge(
+		"jka.up",
+		metric.WithDescription("Whether the JKA server is up (1) or down (0)"),
+	); err != nil {
+		return fmt.Errorf("failed to create jka.up metric: %w", err)
+	}
 
 	if currentClients, err = meter.Int64ObservableUpDownCounter(
 		"jka.clients.connected",
@@ -193,11 +201,14 @@ func initBaseMetrics(meter metric.Meter, q3connector *Q3Connector) error {
 	_, err = meter.RegisterCallback(func(_ context.Context, o metric.Observer) error {
 		status, err := q3connector.GetStatus()
 		if err != nil {
-			return fmt.Errorf("failed to get server status: %w", err)
+			slog.Warn("failed to get server status", "error", err)
+			o.ObserveInt64(up, 0)
+			return nil
 		}
 
 		slog.Debug("server status retrieved", "status", fmt.Sprintf("%+v", status.Values))
 
+		o.ObserveInt64(up, 1)
 		o.ObserveInt64(currentClients, int64(len(status.Players)))
 
 		if maxClientsStr, ok := status.Values["sv_maxclients"]; ok {
@@ -212,7 +223,7 @@ func initBaseMetrics(meter metric.Meter, q3connector *Q3Connector) error {
 		}
 
 		return nil
-	}, currentClients, maxClients, playerPing)
+	}, up, currentClients, maxClients, playerPing)
 
 	if err != nil {
 		return fmt.Errorf("failed to register base metrics callback: %w", err)
